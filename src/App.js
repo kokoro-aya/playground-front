@@ -4,6 +4,9 @@ import arrow from './resources/arrow.svg'
 import './App.css';
 import './Layout.css';
 import * as axios from "axios";
+import Noty from 'noty';
+import '../node_modules/noty/lib/noty.css';
+import '../node_modules/noty/lib/themes/relax.css';
 
 class Form extends React.Component {
   constructor(props) {
@@ -15,10 +18,10 @@ class Form extends React.Component {
   }
   handleChange(event) {
     this.setState({value: event.target.value});
-    this.props.onChange(this.state);
+    this.props.onChange(event.target.value);
   }
   handleSubmit(event) {
-    alert('You submitted:\n' + this.state.value);
+    // alert('You submitted:\n' + this.state.value);
     event.preventDefault();
     this.props.onClickSubmit();
   }
@@ -31,13 +34,12 @@ class Form extends React.Component {
     return (
         <form onSubmit={this.handleSubmit} onReset={this.handleReset}>
           <label>
-            <div>Input</div>
             <textarea name="Program" value={this.state.value} onChange={this.handleChange} cols="60" rows="25" />
           </label>
           <div>
-            <input type="submit" value="Run" />
+            <input type="submit" value="▶️" />
             <span> </span>
-            <input type="reset" value="Reset" />
+            <input type="reset" value="🔄" />
           </div>
         </form>
     )
@@ -62,9 +64,9 @@ class Square extends React.Component {
       if (value === 'GEM')
         return '💎';
       if (value === 'OPENEDSWITCH')
-        return '🔳';
-      if (value === 'CLOSEDSWITCH')
         return '🔲';
+      if (value === 'CLOSEDSWITCH')
+        return '🔳';
       return null;
     }
   }
@@ -79,6 +81,7 @@ class Dashboard extends React.Component {
     this.state = {
       boardData: this.setBoard(this.props.grid, this.props.player),
       consoleLog: "",
+      consoleOutput: "",
       answer: [],
     }
     this.onClickReset = this.onClickReset.bind(this);
@@ -90,6 +93,8 @@ class Dashboard extends React.Component {
     const newData = this.setBoard(this.props.grid, this.props.player);
     this.setState({
       boardData: newData,
+      consoleLog: "",
+      consoleOutput: "",
       answer: [],
     });
   }
@@ -104,6 +109,7 @@ class Dashboard extends React.Component {
 
   makeRequest() {
     const req = this.state.consoleLog;
+    // console.log(req);
     axios.default.post(
         'http://127.0.0.1:8080/playground',
         req,
@@ -111,15 +117,34 @@ class Dashboard extends React.Component {
     ).then(response => {
       const answer = response.data
       if (answer.status === 'OK') {
+        new Noty({
+          type: "info",
+          layout: "topLeft",
+          theme: "relax",
+          text: 'Submit succeeded, your code is running...',
+          timeout: 4000,
+          progressBar: true,
+          closeWith: ['button'],
+          killer: true,
+        }).show()
         this.setState({
           answer: answer.payload
         })
-        console.log(answer);
+        // console.log(answer);
       } else {
-        alert(answer.msg)
-        console.log(answer)
+        new Noty({
+          type: "warning",
+          layout: "topLeft",
+          theme: "relax",
+          text: answer.msg,
+          timeout: 4000,
+          progressBar: true,
+          closeWith: ['button'],
+          killer: true,
+        }).show()
+        // console.log(answer)
       }
-    })
+    });
   }
 
   componentDidMount() {
@@ -138,11 +163,24 @@ class Dashboard extends React.Component {
     else {
       const answer = this.state.answer;
       const nextFrame = answer.shift();
-      console.log(nextFrame);
+      // console.log(nextFrame);
       this.setState({
         answer: answer,
-        boardData: this.setBoard(nextFrame.grid.grid, nextFrame.player)
+        boardData: this.setBoard(nextFrame.grid.grid, nextFrame.player),
+        consoleOutput: nextFrame.consoleLog
       });
+      if (answer.length === 0) {
+        new Noty({
+          type: "success",
+          layout: "topLeft",
+          theme: "relax",
+          text: "Your code has just finished.",
+          timeout: 4000,
+          progressBar: true,
+          closeWith: ['button'],
+          killer: true,
+        }).show()
+      }
     }
   }
 
@@ -156,7 +194,8 @@ class Dashboard extends React.Component {
 
   renderGrid(grid, player) {
     return grid.map((gridRow, y) => {
-      return gridRow.map((gridItem, x) => {
+
+      const row = gridRow.map((gridItem, x) => {
         const key = y * gridRow.length + x;
         if (player.y * gridRow.length + player.x === key) {
           return (
@@ -174,15 +213,27 @@ class Dashboard extends React.Component {
           )
         }
       })
+      return <div className="row">{row}</div>
     })
+  }
+
+  renderConsole(output) {
+    return (
+        <div className="Console">
+          {output}
+        </div>
+    )
   }
 
   render() {
     return (
         <div className="Dashboard">
           {this.renderForm(this.onClickSubmit, this.onClickReset, this.onChange)}
-          <div className="grid">
-            {this.renderGrid(this.state.boardData.grid, this.state.boardData.player)}
+          <div className="Window">
+            <div className="grid">
+              {this.renderGrid(this.state.boardData.grid, this.state.boardData.player)}
+            </div>
+            {this.renderConsole(this.state.consoleOutput)}
           </div>
         </div>
     )
@@ -194,15 +245,19 @@ class Dashboard extends React.Component {
     data.player = player;
     return data;
   }
-
-  startAnimation(moves) {
-
-  }
 }
 
+// const grid = [
+//   [ "OPEN", "CLOSEDSWITCH", "OPEN", "CLOSEDSWITCH", "OPEN", "CLOSEDSWITCH", "OPEN", "CLOSEDSWITCH", "OPEN" ],
+//   [ "BLOCKED", "GEM", "BLOCKED", "GEM", "BLOCKED", "GEM", "BLOCKED", "GEM", "BLOCKED" ]
+// ]
+
 const grid = [
-  [ "OPEN", "CLOSEDSWITCH", "OPEN", "CLOSEDSWITCH", "OPEN", "CLOSEDSWITCH", "OPEN", "CLOSEDSWITCH", "OPEN" ],
-  [ "BLOCKED", "GEM", "BLOCKED", "GEM", "BLOCKED", "GEM", "BLOCKED", "GEM", "BLOCKED" ]
+    [ "OPEN", "OPEN", "BLOCKED", "OPENEDSWITCH", "OPEN", "BLOCKED", "BLOCKED", "BLOCKED", "OPEN" ],
+    [ "BLOCKED", "CLOSEDSWITCH", "OPEN", "CLOSEDSWITCH", "OPEN", "CLOSEDSWITCH", "OPEN", "CLOSEDSWITCH", "OPEN" ],
+    [ "GEM", "OPEN", "BLOCKED", "BLOCKED", "GEM", "BLOCKED", "OPEN", "BLOCKED", "GEM"],
+    [ "BLOCKED", "OPENEDSWITCH", "GEM", "BLOCKED", "BLOCKED", "GEM", "CLOSEDSWITCH", "BLOCKED", "BLOCKED"],
+    [ "BLOCKED", "GEM", "BLOCKED", "BLOCKED", "BLOCKED", "BLOCKED", "GEM", "BLOCKED", "BLOCKED"]
 ]
 
 const player = {

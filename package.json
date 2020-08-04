@@ -11,6 +11,7 @@
     "react-scripts": "3.4.1",
     "antlr4": "^4.8.0",
     "axios": "^0.19.2",
+    "noty": "^3.2.0-beta",
     "typescript": "^3.9.7",
     "@typescript-eslint/eslint-plugin": "2.25.0",
     "@typescript-eslint/parser": "2.25.0"
