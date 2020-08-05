@@ -108,10 +108,13 @@ class Dashboard extends React.Component {
   }
 
   makeRequest() {
-    const req = this.state.consoleLog;
+    const req = {
+      code: this.state.consoleLog,
+      grid: this.props.grid,
+    };
     // console.log(req);
     axios.default.post(
-        'http://127.0.0.1:8080/playground',
+        'http://127.0.0.1:8080/paidiki-xara',
         req,
         { headers: { 'Content-Type': 'application/json'} }
     ).then(response => {
@@ -169,6 +172,30 @@ class Dashboard extends React.Component {
         boardData: this.setBoard(nextFrame.grid.grid, nextFrame.player),
         consoleOutput: nextFrame.consoleLog
       });
+      if (nextFrame.special === 'GEM') {
+        new Noty({
+          type: "information",
+          layout: "topLeft",
+          theme: "relax",
+          text: "Collected a gem.",
+          timeout: 4000,
+          progressBar: true,
+          closeWith: ['button'],
+          killer: true,
+        }).show()
+      }
+      if (nextFrame.special === 'SWITCH') {
+        new Noty({
+          type: "information",
+          layout: "topLeft",
+          theme: "relax",
+          text: "Toggled a switch.",
+          timeout: 4000,
+          progressBar: true,
+          closeWith: ['button'],
+          killer: true,
+        }).show()
+      }
       if (answer.length === 0) {
         new Noty({
           type: "success",
@@ -287,7 +314,7 @@ class App extends React.Component {
         <div className="App">
           <header className="App-header">
             <div>
-            <h2>Playground</h2>
+            <h2>παιδικη χαρα</h2>
             </div>
             <Game />
           </header>
