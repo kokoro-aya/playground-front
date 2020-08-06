@@ -23,15 +23,44 @@
 
 .square {
     box-sizing: border-box;
-    flex: 0 0 11.1%;
     height: 50px;
     width: 50px;
     margin: 5px;
+    background: lightslategrey;
+    position: relative;
+}
+
+.subsquare {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 30px;
+    width: 30px;
+    margin: 10px;
     font-size: 30px;
     color: white;
-    background: lightslategrey;
     text-align: center;
-    line-height: 50px;
+    line-height: 30px;
+}
+
+.icon {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.75;
+}
+
+.down {
+    transform: rotate(90deg);
+}
+
+.left {
+    transform: rotate(180deg);
+}
+.up {
+    transform: rotate(270deg);
 }
 
 .Console {
@@ -45,22 +74,6 @@
     font-size: 15px;
     white-space: pre-wrap;
     text-align: left;
-}
-
-.icon {
-    width: 30px;
-    height: auto;
-    margin: 10px;
-}
-
-.down {
-    transform: rotate(90deg);
-}
-.left {
-    transform: rotate(180deg);
-}
-.up {
-    transform: rotate(270deg);
 }
 
 

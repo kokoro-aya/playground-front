@@ -1,12 +1,13 @@
 import React from 'react';
 import logo from './logo.svg';
-import arrow from './resources/arrow.svg'
+import arrow from './resources/arrow.png'
 import './App.css';
 import './Layout.css';
 import * as axios from "axios";
 import Noty from 'noty';
 import '../node_modules/noty/lib/noty.css';
 import '../node_modules/noty/lib/themes/relax.css';
+import { animateScroll } from 'react-scroll';
 
 class Form extends React.Component {
   constructor(props) {
@@ -47,31 +48,63 @@ class Form extends React.Component {
 }
 
 class Square extends React.Component {
-  getValue() {
-    const {value, isPlayer} = this.props;
+  getDir() {
+    const {dir, isPlayer} = this.props;
     if (isPlayer) {
-      if (value === 'RIGHT')
+      if (dir === 'RIGHT')
         return <img className="icon right" src={arrow} />;
-      if (value === 'UP')
+      if (dir === 'UP')
         return <img className="icon up" src={arrow} />;
-      if (value === 'DOWN')
+      if (dir === 'DOWN')
         return <img className="icon down" src={arrow} />;
-      if (value === 'LEFT')
+      if (dir === 'LEFT')
         return <img className="icon left" src={arrow} />;
-    } else {
-      if (value === 'BLOCKED')
-        return "🏔";
-      if (value === 'GEM')
-        return '💎';
-      if (value === 'OPENEDSWITCH')
-        return '🔲';
-      if (value === 'CLOSEDSWITCH')
-        return '🔳';
-      return null;
     }
+    else return null;
+  }
+  getValue() {
+    const { value } = this.props;
+    if (value === 'BLOCKED')
+      return "🏔";
+    if (value === 'GEM')
+      return '💎';
+    if (value === 'OPENEDSWITCH')
+      return '🔲';
+    if (value === 'CLOSEDSWITCH')
+      return '🔳';
+    return null;
   }
   render() {
-    return (<div className="square">{this.getValue()}</div>)
+    return (
+        <div className="square">
+          <div className="subsquare">{this.getValue()}</div>
+          {this.getDir()}
+        </div>)
+  }
+}
+
+class Console extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+  componentDidMount() {
+    this.scrollToBottom();
+  }
+  componentDidUpdate() {
+    this.scrollToBottom();
+  }
+  scrollToBottom() {
+    animateScroll.scrollToBottom({
+      containerId: 'console'
+    });
+  }
+
+  render() {
+    return (
+        <div className="Console" id="console">
+          {this.props.output}
+        </div>
+    )
   }
 }
 
@@ -227,7 +260,7 @@ class Dashboard extends React.Component {
         if (player.y * gridRow.length + player.x === key) {
           return (
               <div key={key}>
-                <Square value={player.dir} isPlayer={true}/>
+                <Square value={gridItem} dir={player.dir} isPlayer={true}/>
                 {(gridRow[gridRow.length - 1] === gridItem) ? <div className="clear"/> : ""}
               </div>
           )
@@ -246,9 +279,7 @@ class Dashboard extends React.Component {
 
   renderConsole(output) {
     return (
-        <div className="Console">
-          {output}
-        </div>
+        <Console output={output} />
     )
   }
 
